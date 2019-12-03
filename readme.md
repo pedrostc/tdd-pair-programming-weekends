@@ -1,7 +1,7 @@
 # TDD Pair Programming Weekends
 
 ## Environment Setup
-The katas on this repo were developed using JavaScript, Mocha, Chai and Babel.
+The katas on this repo were developed using Node.JS, Mocha, Chai and Babel.
 For setting up the environment, just run `npm install` to install all dependencies.
 If you want a cleaner env. you can use the `initial-setup` tag as your starting point by:
 ```
