@@ -19,10 +19,17 @@ Mocha is configured to run all tests inside of the `./spec` folder and parse all
     + [Ping-Pong Style](http://wiki.c2.com/?PairProgrammingPingPongPattern)
 
 ### Objectives
-- Abordar o basico de TDD
+- Cover TDD basics
     + Small increments (baby steps)
         * Requirements Driven
     + Red-Green-Refactor
+
+## Session 2 - ~~Stray Dog Strut~~ Ping Pong with args parssing
+- Kata
+    + [Args](http://codingdojo.org/kata/Args/)
+
+- Pair Programming Style
+    + 
 
 ## TDD
 TDD is a development discipline that focuses on setting expectations about the code and letting those drive the code's implementation. As a side effect we have a set of automated tests that ensure that the code is doing what it's supposed to. They gives us the power to refactor the code and make it clean and readable knowing that it still behaves the same. They also gives a very fast feedback loop, which makes it simpler to check if everything is ok or not.
