@@ -77,7 +77,7 @@ function getNumbers(inputString) {
 function getDelimitedNumbers(inputString){
     return inputString.split(SECONDARY_SEPARATOR)[1];
 }
-function getSeparatedElements(inputString, delimiter = DEFAULT_SEPARATOR) {
+function getSeparatedElements(inputString, delimiter) {
     return inputString
         .replace(SECONDARY_SEPARATOR, delimiter)
         .split(delimiter)
