@@ -75,25 +75,36 @@ class Schema {
     }
 
     _validate(schema) {
+        for(let validation of SCHEMA_VALIDATORS) {
+            validation(schema);
+        }
+    }
+}
+
+const SCHEMA_VALIDATORS = [
+    (schema) => {
         if (schema.length === 0) {
             throw new InvalidSchemaError("The schema cannot be empty.");
         }
-
+    },
+    (schema) => {
         if(schema.some(field => !field.name)) {
             throw new InvalidSchemaError("Missing arg name")
         } 
-
+    },
+    (schema) => {
         if(schema.some(field => !field.type)) {
             throw new InvalidSchemaError("Missing arg type")
         }
-
+    },
+    (schema) => {
         if(schema.some(field => !field.hasOwnProperty('default'))) {
             throw new InvalidSchemaError("Missing arg default value")
         }
-
+    },
+    (schema) => {
         if(schema.some(field => !VALID_TYPES.includes(field.type))){
             throw new InvalidSchemaError("Invalid arg type")
         }
-
     }
-}
+];

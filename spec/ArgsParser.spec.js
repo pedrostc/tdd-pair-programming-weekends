@@ -10,20 +10,19 @@ import { InvalidSchemaError, ArgumentNotDefinedError, ArgsParser } from "../src/
  */
 
 describe('ArgsParser', () => {    
-    it('should throw error if schema is not an array.', () => {
-        const schema = 1;
-        const action = () => new ArgsParser(schema);
-
-        expect(action).to.throw(TypeError, /array/);
-    });
-
-    it('should throw error if nothing is passed.', () => {
-        const action = () => new ArgsParser();
-
-        expect(action).to.throw(TypeError, /Should inform a schema/);
-    });
-
     describe('schema validation', () => {
+        it('should throw error if nothing is passed.', () => {
+            const action = () => new ArgsParser();
+    
+            expect(action).to.throw(TypeError, /Should inform a schema/);
+        });
+        it('should throw error if schema is not an array.', () => {
+            const schema = 1;
+            const action = () => new ArgsParser(schema);
+    
+            expect(action).to.throw(TypeError, /array/);
+        });
+
         it('should throw error for an empty schema.', () => {
             const schema = [];
             const action = () => new ArgsParser(schema);
