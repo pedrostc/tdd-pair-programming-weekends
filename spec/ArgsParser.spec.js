@@ -89,6 +89,7 @@ describe('ArgsParser', () => {
         expect(action).to.throw(ArgumentNotDefinedError, /"l" was not defined in the schema/);
     });
 
+    // it should return the default value with the correct type
     const defaultValueTypeTestCases = [
         { 
             schema: [{name: 'l', type: 'boolean', default: 'true'}],
@@ -110,4 +111,97 @@ describe('ArgsParser', () => {
             expect(actualValue).to.equals(expectedOutput);
         });
     });
+
+    // inputArgs => ["-l","-p","8080","-d","/usr/logs"]
+    // inputArgs = ["-d", "/usr/mariola"]; parser.getValue("d") === "/usr/mariola";
+    it('should return the default value for a flag that is not passed in', () => {
+        const schema = [{name: 'd', type: 'string', default: '/usr/home'}];
+        const inputArgs = [];
+
+        const flagName = 'd';
+        const expectedOutput = '/usr/home';
+
+        const parser = new ArgsParser(schema);
+        
+        parser.parse(inputArgs);
+        const actualValue = parser.getValue(flagName);
+
+        expect(actualValue).to.equals(expectedOutput);
+    });
+
+    it('should raise error when trying to parse flags not defined in the schema', () => {
+        const schema = [{name: 'd', type: 'string', default: '/usr/home'}];
+        const inputArgs = ['-l', 'true'];
+
+        const parser = new ArgsParser(schema);
+        
+        const action = () => parser.parse(inputArgs);
+
+        expect(action).to.throw(ArgumentNotDefinedError, /"l" was not defined in the schema/);
+    });
+
+    const GetValueTestCases = [
+        { 
+            schema: [{name: 'l', type: 'boolean', default: 'true'}],
+            inputArgs: ["-l","false"],
+            flagName: "l",
+            expectedOutput: false
+        },{ 
+            schema: [
+                {name: 'l', type: 'boolean', default: 'true'},
+                {name: 'd', type: 'string', default: '/usr/local'}
+            ],
+            inputArgs: ["-l","false","-d",""],
+            flagName: "d",
+            expectedOutput: ""
+        },{ 
+            schema: [
+                {name: 'l', type: 'boolean', default: 'true'},
+                {name: 'd', type: 'string', default: '/usr/local'}
+            ],
+            inputArgs: ["-d","-l","-l","false"],
+            flagName: "l",
+            expectedOutput: false
+        }/*,{ 
+            schema: [
+                {name: 'l', type: 'string', default: 'true'},
+                {name: 'd', type: 'string', default: '/usr/local'}
+            ],
+            inputArgs: ["-l","-d","-d","-l"],
+            flagName: "d",
+            expectedOutput: "-l"
+        }*/
+    ];
+    GetValueTestCases.forEach(({schema, inputArgs, flagName, expectedOutput}) => {
+        it('should return the value for a flag that is passed in', () => {
+            const parser = new ArgsParser(schema);
+            
+            parser.parse(inputArgs);
+            const actualValue = parser.getValue(flagName);
+    
+            expect(actualValue).to.equals(expectedOutput);
+        });    
+    });
+   
+    // it('should raise an error if no flag is passed in', () => {
+    //     const schema = [{name: 'd', type: 'string', default: '/usr/home'}];
+    //     const inputArgs = [];
+
+    //     const flagName = '';
+
+    //     const parser = new ArgsParser(schema);
+        
+    //     parser.parse(inputArgs);
+
+    //     expect(parser.getValue(flagName)).to.throw(FlagNotDefinedError, /Missing flag/);
+    // });    
+
+    /*
+        const string schema = [{...},...];
+        public void main(String[] args) {
+            var parser = new ArgsParser(schema);
+            parser.Parse(args);
+            var value = parser.GetValue(flagName);
+        }
+    */
 });

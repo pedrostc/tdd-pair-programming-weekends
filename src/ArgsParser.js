@@ -15,20 +15,60 @@ export class ArgumentNotDefinedError extends Error {
 
 export class ArgsParser {
     constructor(schema) {        
-        
         this._checkInput(schema);
+        this._args = [];
         this._schema = new Schema(schema);
     }
+    // get all argNames in input
+    // check if they exist in schema
+    // at this moment we're considering that we will always have the input arg with a value
+    // ["-l", "true", "-d", "lala"]
+    // ["-l"] => invalid input
+    // ["-l", "true", "-d", "lala"] => [["-l", "true"], ["-d", "lala"]]
+    // array.slice(start, end);
+    //  array.slice(0, 2) => ["-l", "true"]
+    // TODO: NEXT SESSION START ON THIS ONE. - REFACTOR THE HELL OUT OF IT.
+    parse(input){
+        
+        if(input.length > 0) {
 
+            const greatInput = [];
+
+            for (let i=0; i<input.length; i+=2){
+                greatInput.push(input.slice(i,i+2));
+            }
+
+            greatInput.forEach(element => {
+                if(!this._schema.contains(element[0].replace('-',''))) {
+                    throw new ArgumentNotDefinedError(element[0].replace('-',''));
+                }
+            });
+        }
+
+        this._args = input;
+    }
     getValue(name){
         if (!this._schema.contains(name)){
             throw new ArgumentNotDefinedError(name);
         }
 
-        const defaultValue = this._schema.getDefault(name);
-        const parser = this._schema.getParser(name);
+        let value = this._argsContains(name) ?
+            this._getArgValue(name) :
+            this._schema.getDefault(name);
 
-        return parser(defaultValue);
+        return this._parseValue(name, value);
+    }
+
+    _parseValue(name, value) {
+        const parserFunction = this._schema.getValueParser(name);
+        return parserFunction(value);
+    }
+    _argsContains(name) {
+        return this._args.indexOf(`-${name}`) >= 0;
+    }
+    _getArgValue(name) {
+        const flagIndex = this._args.indexOf(`-${name}`);
+        return this._args[flagIndex + 1];
     }
 
     _checkInput(schema) {
@@ -43,7 +83,7 @@ export class ArgsParser {
 }
 
 const PARSER_MAP = {
-    boolean: (value) => Boolean(value),
+    boolean: (value) => value.toLowerCase() === 'true',
     integer: (value) => Number.parseInt(value),
     string: (value) => value.toString()
 };
@@ -55,16 +95,11 @@ class Schema {
         this._schema = schema;
     }
 
-    getParser(name) {
-        const type = this.getType(name);
-        return PARSER_MAP[type];
-    }
     getType(name){
         return this._schema
             .filter(item => item.name === name)[0]
             .type;
     }
-
     getDefault(name) {
         return this._schema
             .filter(item => item.name === name)[0]
@@ -72,6 +107,10 @@ class Schema {
     }
     contains(name) {
         return this._schema.some(item => item.name === name);
+    }
+    getValueParser(name) {
+        const type = this.getType(name);
+        return PARSER_MAP[type];
     }
 
     _validate(schema) {
