@@ -16,7 +16,8 @@ export class ArgumentNotDefinedError extends Error {
 export class ArgsParser {
     constructor(schema) {        
         this._checkInput(schema);
-        this._args = [];
+
+        this._argumentMap = new Map();
         this._schema = new Schema(schema);
     }
     // get all argNames in input
@@ -24,33 +25,19 @@ export class ArgsParser {
     // at this moment we're considering that we will always have the input arg with a value
     // ["-l", "true", "-d", "lala"]
     // ["-l"] => invalid input
-    // ["-l", "true", "-d", "lala"] => [["-l", "true"], ["-d", "lala"]]
-    // array.slice(start, end);
-    //  array.slice(0, 2) => ["-l", "true"]
-    // TODO: NEXT SESSION START ON THIS ONE. - REFACTOR THE HELL OUT OF IT.
     parse(input){
-        
         if(input.length > 0) {
+            const inputInPairs = this._splitIntoPairs(input);
 
-            const greatInput = [];
+            inputInPairs.forEach(([flagName, flagValue]) => {
+                this._errorIfFlagIsNotDefinedInSchema(flagName.replace('-',''));
 
-            for (let i=0; i<input.length; i+=2){
-                greatInput.push(input.slice(i,i+2));
-            }
-
-            greatInput.forEach(element => {
-                if(!this._schema.contains(element[0].replace('-',''))) {
-                    throw new ArgumentNotDefinedError(element[0].replace('-',''));
-                }
+                this._argumentMap.set(flagName.replace('-',''), flagValue);
             });
         }
-
-        this._args = input;
     }
     getValue(name){
-        if (!this._schema.contains(name)){
-            throw new ArgumentNotDefinedError(name);
-        }
+        this._errorIfFlagIsNotDefinedInSchema(name);
 
         let value = this._argsContains(name) ?
             this._getArgValue(name) :
@@ -59,26 +46,36 @@ export class ArgsParser {
         return this._parseValue(name, value);
     }
 
+    _errorIfFlagIsNotDefinedInSchema(flagName) {
+        if(!this._schema.contains(flagName)) {
+            throw new ArgumentNotDefinedError(flagName);
+        }
+    }
     _parseValue(name, value) {
         const parserFunction = this._schema.getValueParser(name);
         return parserFunction(value);
     }
     _argsContains(name) {
-        return this._args.indexOf(`-${name}`) >= 0;
+        return this._argumentMap.has(name);
     }
     _getArgValue(name) {
-        const flagIndex = this._args.indexOf(`-${name}`);
-        return this._args[flagIndex + 1];
+        return this._argumentMap.get(name);
     }
 
     _checkInput(schema) {
-
         if(!schema){
             throw new TypeError("Should inform a schema");
         }
         if(!Array.isArray(schema)) {
             throw new TypeError("The schema should be an array of objects.");
         }        
+    }
+    _splitIntoPairs(inputArray) {
+        const inputInPairs = [];
+        for (let i=0; i < inputArray.length; i+=2){
+            inputInPairs.push(inputArray.slice(i,i+2));
+        }
+        return inputInPairs;
     }
 }
 

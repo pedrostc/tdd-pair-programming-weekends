@@ -145,7 +145,8 @@ describe('ArgsParser', () => {
             schema: [{name: 'l', type: 'boolean', default: 'true'}],
             inputArgs: ["-l","false"],
             flagName: "l",
-            expectedOutput: false
+            expectedOutput: false,
+            testCaseName: "Boolean"
         },{ 
             schema: [
                 {name: 'l', type: 'boolean', default: 'true'},
@@ -153,7 +154,8 @@ describe('ArgsParser', () => {
             ],
             inputArgs: ["-l","false","-d",""],
             flagName: "d",
-            expectedOutput: ""
+            expectedOutput: "",
+            testCaseName: "String"
         },{ 
             schema: [
                 {name: 'l', type: 'boolean', default: 'true'},
@@ -161,19 +163,21 @@ describe('ArgsParser', () => {
             ],
             inputArgs: ["-d","-l","-l","false"],
             flagName: "l",
-            expectedOutput: false
-        }/*,{ 
+            expectedOutput: false,
+            testCaseName: "Multiple Flags Boolean edge case"
+        },{ 
             schema: [
                 {name: 'l', type: 'string', default: 'true'},
                 {name: 'd', type: 'string', default: '/usr/local'}
             ],
             inputArgs: ["-l","-d","-d","-l"],
             flagName: "d",
-            expectedOutput: "-l"
-        }*/
+            expectedOutput: "-l",
+            testCaseName: "Multiple Flags String edge case"
+        }
     ];
-    GetValueTestCases.forEach(({schema, inputArgs, flagName, expectedOutput}) => {
-        it('should return the value for a flag that is passed in', () => {
+    GetValueTestCases.forEach(({schema, inputArgs, flagName, expectedOutput, testCaseName}) => {
+        it(`should return the value for a flag that is passed in: ${testCaseName}`, () => {
             const parser = new ArgsParser(schema);
             
             parser.parse(inputArgs);
