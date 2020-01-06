@@ -203,4 +203,31 @@ describe('ArgsParser', () => {
 
         expect(action).to.throw(DuplicateInputError, /"d" was defined more than once on the input/);
     });
+
+    it('should parse boolean flags without explicit value', () => {
+        const schema = [{name: 'l', type: 'boolean', default: 'false'}];
+        const inputArgs = ['-l'];
+        const expectedValue = true;
+
+        const parser = new ArgsParser(schema);
+        parser.parse(inputArgs);
+
+        const actualValue = parser.getValue('l');
+
+        expect(actualValue).to.equal(expectedValue);
+    });
+
+    it('should throw an error for non-existing flags after boolean flag without explicit value', () => {
+
+        const schema = [
+            {name: 'l', type: 'boolean', default: 'false'},
+            {name: 'd', type: 'string', default: '/usr/local'}
+        ];
+        const inputArgs = ["-l","-FakeFlag","-d","value"]; // ["-l", "true", "-FakeFlag", "-d", "-l", "true"]
+
+        const parser = new ArgsParser(schema);
+        const action = () => parser.parse(inputArgs);
+
+        expect(action).to.throw(ArgumentNotDefinedError, /"FakeFlag" was not defined in the schema/);
+    })
 });

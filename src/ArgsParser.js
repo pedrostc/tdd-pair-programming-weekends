@@ -19,6 +19,18 @@ export class DuplicateInputError extends Error {
     }
 }
 
+// TODO: Put somewhere safe
+const hasFlagNameFormat = (value) => {
+    return value.match(/^-[a-zA-Z]\b/)
+};
+
+const isBooleanInSchema = (flagName, schema) => {
+    return schema.getType(flagName) === 'boolean';
+};
+
+const isDefinedInSchema = (flagName, schema) => {
+    return schema.contains(flagName);
+} 
 
 export class ArgsParser {
     constructor(schema) {        
@@ -27,25 +39,23 @@ export class ArgsParser {
         this._argumentMap = new Map();
         this._schema = new Schema(schema);
     }
-    // get all argNames in input
-    // check if they exist in schema
-    // at this moment we're considering that we will always have the input arg with a value
-    // ["-l", "true", "-d", "lala"]
-    // ["-l"] => invalid input
+
     parse(input){
-        if(input.length > 0) {
-            const inputInPairs = this._splitIntoPairs(input);
+        if(input.length === 0) return; 
 
-            inputInPairs.forEach(([rawFlagName, flagValue]) => {
-                const flagName = rawFlagName.replace('-','');
+        const expandedInput = this._expandBooleanValuesIn(input);
+        const inputInPairs = this._splitIntoPairs(expandedInput);
 
-                this._errorIfFlagIsNotDefinedInSchema(flagName);
-                this._errorIfArgumentAlreadyDefined(flagName);
+        inputInPairs.forEach(([rawFlagName, flagValue]) => {
+            const flagName = rawFlagName.replace('-','');
 
-                this._argumentMap.set(flagName, flagValue);
-            });
-        }
+            this._errorIfFlagIsNotDefinedInSchema(flagName);
+            this._errorIfArgumentAlreadyDefined(flagName);
+
+            this._argumentMap.set(flagName, flagValue);
+        });
     }
+    
     getValue(name){
         this._errorIfFlagIsNotDefinedInSchema(name);
 
@@ -66,6 +76,32 @@ export class ArgsParser {
         if (this._argumentMap.has(flagName)){
             throw new DuplicateInputError(flagName);
         }
+    }
+
+    _expandBooleanValuesIn(input) {
+        const expandedInput = [];
+        
+        for(let index = 0; index < input.length; index++) {
+            const item = input[index];
+            expandedInput.push(item);
+            const flagName = item.replace('-', '');
+
+            if(
+                !hasFlagNameFormat(item) || 
+                !isDefinedInSchema(flagName, this._schema)
+            ) continue;
+            
+            const nextItem = input[index + 1];
+
+            if(!isBooleanInSchema(flagName, this._schema)) { 
+                expandedInput.push(nextItem);
+                index++;
+            } else if(!nextItem || hasFlagNameFormat(nextItem)) {
+                expandedInput.push('true');
+            }
+        }
+
+        return expandedInput;
     }
 
     _parseValue(name, value) {
