@@ -13,6 +13,13 @@ export class ArgumentNotDefinedError extends Error {
     }
 }
 
+export class DuplicateInputError extends Error {
+    constructor(name) {
+        super(`The argument "${name}" was defined more than once on the input.`);
+    }
+}
+
+
 export class ArgsParser {
     constructor(schema) {        
         this._checkInput(schema);
@@ -29,10 +36,13 @@ export class ArgsParser {
         if(input.length > 0) {
             const inputInPairs = this._splitIntoPairs(input);
 
-            inputInPairs.forEach(([flagName, flagValue]) => {
-                this._errorIfFlagIsNotDefinedInSchema(flagName.replace('-',''));
+            inputInPairs.forEach(([rawFlagName, flagValue]) => {
+                const flagName = rawFlagName.replace('-','');
 
-                this._argumentMap.set(flagName.replace('-',''), flagValue);
+                this._errorIfFlagIsNotDefinedInSchema(flagName);
+                this._errorIfArgumentAlreadyDefined(flagName);
+
+                this._argumentMap.set(flagName, flagValue);
             });
         }
     }
@@ -51,6 +61,13 @@ export class ArgsParser {
             throw new ArgumentNotDefinedError(flagName);
         }
     }
+
+    _errorIfArgumentAlreadyDefined(flagName) {
+        if (this._argumentMap.has(flagName)){
+            throw new DuplicateInputError(flagName);
+        }
+    }
+
     _parseValue(name, value) {
         const parserFunction = this._schema.getValueParser(name);
         return parserFunction(value);

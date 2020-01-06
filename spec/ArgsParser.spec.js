@@ -1,5 +1,10 @@
 import { expect } from "chai";
-import { InvalidSchemaError, ArgumentNotDefinedError, ArgsParser } from "../src/ArgsParser"
+import {
+    InvalidSchemaError,
+    ArgumentNotDefinedError,
+    ArgsParser,
+    DuplicateInputError
+} from "../src/ArgsParser"
 
 /**
  * [{
@@ -187,25 +192,15 @@ describe('ArgsParser', () => {
         });    
     });
    
-    // it('should raise an error if no flag is passed in', () => {
-    //     const schema = [{name: 'd', type: 'string', default: '/usr/home'}];
-    //     const inputArgs = [];
 
-    //     const flagName = '';
+    it('should throw error if the same flag is passed more than once', () => {
+        const schema = [{name: 'd', type: 'string', default: '/usr/home'}];
+        const inputArgs = ['-d', 'true', '-d', 'false'];
 
-    //     const parser = new ArgsParser(schema);
+        const parser = new ArgsParser(schema);
         
-    //     parser.parse(inputArgs);
+        const action = () => parser.parse(inputArgs);
 
-    //     expect(parser.getValue(flagName)).to.throw(FlagNotDefinedError, /Missing flag/);
-    // });    
-
-    /*
-        const string schema = [{...},...];
-        public void main(String[] args) {
-            var parser = new ArgsParser(schema);
-            parser.Parse(args);
-            var value = parser.GetValue(flagName);
-        }
-    */
+        expect(action).to.throw(DuplicateInputError, /"d" was defined more than once on the input/);
+    });
 });

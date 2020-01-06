@@ -18,7 +18,7 @@
 - [X] Parse default value to target type
 
 ## Parsing
-- [] should parse an array of strings
+- [X] should parse an array of strings
     + [X] array with a value that differs from the default
     + [X] empty arrays are valid.
 - [X] flags should be one character, preceeded by a minus sign
@@ -26,9 +26,9 @@
 - [X] the program can ask for the flag using it's name. "nameof -p -> p"
 - [X] input will be an array of string. ``
 - [] handle if input parameter has empty spaces
-- [] check for invalid extra space btw flags
+- [-] ~check for invalid extra space btw flags~ -> out of scope
 
-- [] should throw an exception if the same flag is passed more than once.
+- [X] should throw an exception if the same flag is passed more than once.
 
 - [] for boolean flags it should return true if it's defined on the args.
 - [X] validate input "-d -d"
