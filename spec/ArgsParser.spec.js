@@ -3,7 +3,9 @@ import {
     InvalidSchemaError,
     ArgumentNotDefinedError,
     ArgsParser,
-    DuplicateInputError
+    DuplicateInputError,
+    InvalidArgumentTypeError
+
 } from "../src/ArgsParser"
 
 /**
@@ -223,11 +225,37 @@ describe('ArgsParser', () => {
             {name: 'l', type: 'boolean', default: 'false'},
             {name: 'd', type: 'string', default: '/usr/local'}
         ];
-        const inputArgs = ["-l","-FakeFlag","-d","value"]; // ["-l", "true", "-FakeFlag", "-d", "-l", "true"]
+        const inputArgs = ["-l","-k","-d","value"];
 
         const parser = new ArgsParser(schema);
         const action = () => parser.parse(inputArgs);
 
-        expect(action).to.throw(ArgumentNotDefinedError, /"FakeFlag" was not defined in the schema/);
-    })
+        expect(action).to.throw(ArgumentNotDefinedError, /"k" was not defined in the schema/);
+    });
+
+    it('should throw an error if value type does not match the one defined in the schema: Boolean', () => {
+
+        const schema = [
+            {name: 'l', type: 'boolean', default: 'false'}
+        ];
+        const inputArgs = ["-l","invalid-value"];
+
+        const parser = new ArgsParser(schema);
+        const action = () => parser.parse(inputArgs);
+
+        expect(action).to.throw(InvalidArgumentTypeError, /value type for flag "l" does not match the schema./);
+    });
+
+    it('should throw an error if value type does not match the one defined in the schema: Number', () => {
+
+        const schema = [
+            {name: 'p', type: 'integer', default: '8080'}
+        ];
+        const inputArgs = ["-p","invalid-value"];
+
+        const parser = new ArgsParser(schema);
+        const action = () => parser.parse(inputArgs);
+
+        expect(action).to.throw(InvalidArgumentTypeError, /value type for flag "p" does not match the schema./);
+    });
 });

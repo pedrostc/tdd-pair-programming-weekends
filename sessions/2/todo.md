@@ -33,12 +33,14 @@
 - [X] for boolean flags it should return true if it's defined on the args.
 - [X] validate input "-d -d"
 
+- [X] Validate input value types with the schema (ex.: "-l mariola" should throw an error)
+- 
 ### For NExt Session
-- [] Validate input value types with the schema (ex.: "-l mariola" should throw an error)
 
+- [] Throw an error if there is a string argument without value
+
+- [] what happens if the user tries to parse a flag with more than one letter? e.g. -FakeFlag
 - [] check if we can enhance the argsParse._parseValue
-- [] What to do with a string argument without a value
-
 
 ## Examples
 - `-l -p 8080 -d /usr/logs -> ["-l","-p","8080","-d","/usr/logs"]`

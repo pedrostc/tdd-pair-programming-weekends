@@ -19,6 +19,12 @@ export class DuplicateInputError extends Error {
     }
 }
 
+export class InvalidArgumentTypeError extends Error {
+    constructor(name) {
+        super(`The value type for flag "${name}" does not match the schema.`);
+    }
+}
+
 // TODO: Put somewhere safe
 const hasFlagNameFormat = (value) => {
     return value.match(/^-[a-zA-Z]\b/)
@@ -50,6 +56,7 @@ export class ArgsParser {
             const flagName = rawFlagName.replace('-','');
 
             this._errorIfFlagIsNotDefinedInSchema(flagName);
+            this._errorIfTypeDoesNotMatchSchema(flagName, flagValue);
             this._errorIfArgumentAlreadyDefined(flagName);
 
             this._argumentMap.set(flagName, flagValue);
@@ -71,6 +78,15 @@ export class ArgsParser {
             throw new ArgumentNotDefinedError(flagName);
         }
     }
+
+    _errorIfTypeDoesNotMatchSchema(flagName, flagValue){
+        const isValid = this._schema.getValueValidator(flagName);
+
+        if (!isValid(flagValue)) {
+            throw new InvalidArgumentTypeError(flagName);            
+        }
+
+    }    
 
     _errorIfArgumentAlreadyDefined(flagName) {
         if (this._argumentMap.has(flagName)){
@@ -132,12 +148,6 @@ export class ArgsParser {
     }
 }
 
-const PARSER_MAP = {
-    boolean: (value) => value.toLowerCase() === 'true',
-    integer: (value) => Number.parseInt(value),
-    string: (value) => value.toString()
-};
-
 class Schema {
     constructor(schema) {
         this._validate(schema);
@@ -160,15 +170,32 @@ class Schema {
     }
     getValueParser(name) {
         const type = this.getType(name);
-        return PARSER_MAP[type];
+        return SCHEMA_TYPE_PARSER_MAP[type];
     }
+    getValueValidator(name) {
+        const type = this.getType(name);
+        return SCHEMA_TYPE_VALIDATOR_MAP[type];
+    }    
 
     _validate(schema) {
         for(let validation of SCHEMA_VALIDATORS) {
             validation(schema);
         }
     }
+    
 }
+
+const SCHEMA_TYPE_VALIDATOR_MAP = {
+    boolean: (value) => (value === "true" || value === "false"),
+    integer: (value) => !isNaN(value),
+    string: (value) => true
+};
+
+const SCHEMA_TYPE_PARSER_MAP = {
+    boolean: (value) => value.toLowerCase() === 'true',
+    integer: (value) => Number.parseInt(value),
+    string: (value) => value.toString()
+};
 
 const SCHEMA_VALIDATORS = [
     (schema) => {
