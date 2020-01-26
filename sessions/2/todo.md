@@ -35,7 +35,7 @@
 
 - [X] Validate input value types with the schema (ex.: "-l mariola" should throw an error)
 - 
-### For NExt Session
+### For Next Session
 
 - [] Throw an error if there is a string argument without value
 
